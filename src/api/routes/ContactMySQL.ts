@@ -7,38 +7,40 @@ const route = Router();
 export default (app: Router) => {
   app.use('/contact', route);
   const contactSql = Container.get(ContactMySQL);
-  route.get('/', middlewares.isAuth, middlewares.attachCurrentUser, async (req: Request, res: Response) =>{
-    const retrieveContact = Container.get(ContactMySQL);
-    return res.status(200).json({user: req.currentUser});
+
+  route.get('/', async (req: Request, res: Response) =>{
+    const dto = contactSql.GetContactDTO(req);
+    const data = contactSql.getContact(dto);
+    return res.status(200).json({ data });
   });
 
-  route.get('/:email', middlewares.isAuth, middlewares.attachCurrentUser, async (req: Request, res: Response) => {
-    const email = req.query.email as string;
-    if (!email) {
-      return res.status(400).json({ error: 'Email parameter is required' });
+  route.get('/:email', async (req: Request, res: Response, next: NextFunction) => {
+    const dto = contactSql.GetContactByMailDTO(req);
+    const data = contactSql.getContactByMail(dto.email);
+    if (!data) {
+      return res.status(404).json({ message: 'Contact not found' });
     }
-    
-    const contact = await contactSql.getContactByMail(email);
-    if (!contact) {
-      return res.status(404).json({ error: 'Contact not found' });
-    }
-    return res.status(200).json({ contact });
+    return res.json({ data }).status(201);
   });
 
   route.post('/', (req: any, res: Response, next: NextFunction) => {
     const dto = contactSql.createContactDTO(req);
-    const data = contactSql.createContact(req.body);
+    const data = contactSql.createContact(dto);
     return res.status(201).json({ data });
   });
 
   route.put('/:email', async (req: Request, res: Response, next: NextFunction) => {
-    const updatedContact=await contactSql.updateContact(req.params.id, req.body);
-    return res.status(200).json({contact: updatedContact});
+    const dto = contactSql.updateContactDTO(req);
+    const data = contactSql.updateContact(dto.email, dto);
+      if (!data) {
+        return res.status(404).json({ message: 'Contact not found' });
+      }
+      return res.status(200).json({ data });
   });
 
   route.delete('/:id', async(req: any, res: Response, net: NextFunction) =>{
-    const contactSQL = Container.get(ContactMySQL);
-    const removeContact = await contactSql.deleteContact(req.params.id, req.body);
+    const dto = contactSql.DeleteContactDTO(req);
+    const data = contactSql.deleteContact(dto.email, dto);
     res.status(204).json({message:"Contact deleted"});
   });
 

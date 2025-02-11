@@ -7,6 +7,7 @@ const route = Router();
 export default (app: Router) => {
   app.use('/contact', route);
   const contactService = Container.get(ContactService);
+
   route.get('/', middlewares.isAuth, middlewares.attachCurrentUser, (req: Request, res: Response) => {
     return res.json({ user: req.currentUser }).status(200);
   });
@@ -23,9 +24,7 @@ export default (app: Router) => {
       
       const contactId = req.params.id;
       const updateDto = contactService.contactUpdateDto(req);
-  
       const updatedContact = await contactService.contactUpdate(contactId, updateDto);
-  
       if (!updatedContact) {
         return res.status(404).json({ message: 'Contact not found' });
       }

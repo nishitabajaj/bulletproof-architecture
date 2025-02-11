@@ -55,7 +55,6 @@ export default class ContactMySQL{
     if (!contact){
       throw new Error('Contact not found');
     }
-    // Contact.update(updateData);
     Contact.update(updateData,{ where: {email: email} });
     return contact;
   }

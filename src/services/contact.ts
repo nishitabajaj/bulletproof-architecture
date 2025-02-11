@@ -35,9 +35,7 @@ export default class ContactService {
   }
 
   public contactCreate(dto: IContact): any {
-    // const query = 'Create '
-    return dto;
-  }
+    return dto;}
 
   public contactUpdateDto(req: any): ContactDto{
     const dto = new ContactDto()
