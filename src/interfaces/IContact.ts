@@ -10,6 +10,12 @@ export class ContactDto {
   email: string;
 }
 
+export class CreateContactDto{
+  name: string;
+  phone: number;
+  email: string;
+}
+
 export class UpdateContactDto{
   name: string;
   phone: number;
@@ -30,4 +36,8 @@ export class GetContactByMailDto{
 
 export class DeleteContactDto{
   email: string;
+}
+
+export interface GetById{
+  id: number;
 }

@@ -7,7 +7,8 @@ import { randomBytes } from 'crypto';
 import { IUser, IUserInputDTO } from '@/interfaces/IUser';
 import { EventDispatcher, EventDispatcherInterface } from '@/decorators/eventDispatcher';
 import events from '@/subscribers/events';
-import { ContactDto, IContact } from '@/interfaces/IContact';
+import { ContactDto,UpdateContactDto,DeleteContactDto, IContact } from '@/interfaces/IContact';
+import user from '@/models/user';
 
 @Service()
 export default class ContactService {
@@ -17,16 +18,22 @@ export default class ContactService {
     
   }
 
+  public contactGetDto(req: any): IContact{
+      return {
+        name: req.body.name,
+        phone: req.body.phone,
+        email: req.body.email, };
+    }
+  
+  public async getContact(dto: ContactDto): Promise<ContactDto[]>{
+    const contacts = await user.find(); // Fetch contacts from MongoDB
+    return contacts.map(contact => this.contactGetDto(contact)); // Map to DTO
+  }  
+
   public contactCreateDto(req: any): IContact {
-    if(!req.body.name){
-      throw new Error('Name is required Field!!')
-    }
-    if(!req.body.phone){
-      throw new Error('Phone is required Field!!')
-    }
-    if(!req.body.email){
-      throw new Error('Email is required Field!!')
-    }
+    if(!req.body.name){throw new Error('Name is required Field!!')}
+    if(!req.body.phone){throw new Error('Phone is required Field!!')}
+    if(!req.body.email){throw new Error('Email is required Field!!')}
     return {
       name: req.body.name,
       phone: req.body.phone,
@@ -34,13 +41,30 @@ export default class ContactService {
     }
   }
 
-  public contactCreate(dto: IContact): any {
-    return dto;}
+  
+    public async contactCreate(dto: IContact): Promise<IContact> {
+      try {
+          console.log('🟢 Inserting Contact:', dto);
+          const newContact = new user(dto);
+          await newContact.save();
+          console.log('✅ Contact Created Successfully:', newContact.toJSON());
+          return dto;
+      } catch (error) {
+          console.error('❌ Error saving contact:', error);
+          throw new Error('Database insertion failed');
+      }
+  }
 
-  public contactUpdateDto(req: any): ContactDto{
-    const dto = new ContactDto()
+  public contactUpdateDto(req: any): UpdateContactDto{
+    const dto = new UpdateContactDto()
     if(req.body.name){
       dto.name = req.body.name;
+    }
+    if(req.body.phone){ // <-- Check if this condition exists
+      dto.phone = req.body.phone;
+    }
+    if(req.body.email){
+      dto.email=req.body.email;
     }
 
     return dto;
@@ -67,12 +91,38 @@ export default class ContactService {
   }
 
   private async findContactById(contactId: string): Promise<IContact | null> {
-    // Simulate database lookup
-    return {
-      name: "Existing Name",
-      phone: 123-456-7890, // Ensure this matches the type defined in IContact
-      email: "existing@example.com",
-    };
+    try {
+        // Fetch contact details from the database
+        const contact = await user.findById(contactId).select("name email phone").lean();
+        if (!contact) {
+            console.warn(`Contact with ID ${contactId} not found.`);
+            return null;
+        }
+        return {
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone};
+    } catch (error) {
+        console.error("Error fetching contact by ID:", error);
+        return null;
+    }
+  }
+
+  public DeleteContactDTO(req: any): DeleteContactDto{
+    if(!req.body.email){
+      throw new Error("Please enter a mail for contact deletion.")
+    }
+    return {email: req.body.email};
+  }
+
+  public async deleteContact(email: string): Promise<void> {
+    const contact = await user.findOne({ email: email }); // Correct way to query
+
+    if (!contact) {
+        throw new Error("Contact not found");
+    }
+    await user.deleteOne({ email: email }); // Delete contact
+    console.log(`Contact with email ${email} deleted successfully`);
   }
    
 }

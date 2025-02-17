@@ -9,20 +9,16 @@ import { Logger } from 'winston';
 const route = Router();
 
 export default (app: Router) => {
+  console.log("Auth routes loaded");
   app.use('/auth', route);
 
   route.post(
     '/signup',
-    celebrate({
-      body: Joi.object({
-        name: Joi.string().required(),
-        email: Joi.string().required(),
-        password: Joi.string().required(),
-      }),
-    }),
     async (req: Request, res: Response, next: NextFunction) => {
-      const logger:Logger = Container.get('logger');
-      logger.debug('Calling Sign-Up endpoint with body: %o', req.body );
+      console.log("Signup route hit"); // Add this
+      const logger: Logger = Container.get('logger');
+      logger.debug('Calling Sign-Up endpoint with body: %o', req.body);
+      
       try {
         const authServiceInstance = Container.get(AuthService);
         const { user, token } = await authServiceInstance.SignUp(req.body as IUserInputDTO);
@@ -33,15 +29,10 @@ export default (app: Router) => {
       }
     },
   );
-
+  
+  
   route.post(
     '/signin',
-    celebrate({
-      body: Joi.object({
-        email: Joi.string().required(),
-        password: Joi.string().required(),
-      }),
-    }),
     async (req: Request, res: Response, next: NextFunction) => {
       const logger:Logger = Container.get('logger');
       logger.debug('Calling Sign-In endpoint with body: %o', req.body);
@@ -69,3 +60,5 @@ export default (app: Router) => {
     }
   });
 };
+
+//http://localhost:3000/api/auth/signin

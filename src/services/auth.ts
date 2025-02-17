@@ -39,13 +39,6 @@ export default class AuthService {
       await this.mailer.SendWelcomeEmail(userRecord);
 
       this.eventDispatcher.dispatch(events.user.signUp, { user: userRecord });
-
-      /**
-       * @TODO This is not the best way to deal with this
-       * There should exist a 'Mapper' layer
-       * that transforms data from layer to layer
-       * but that's too over-engineering for now
-       */
       const user = userRecord.toObject();
       Reflect.deleteProperty(user, 'password');
       Reflect.deleteProperty(user, 'salt');
@@ -87,16 +80,6 @@ export default class AuthService {
     const today = new Date();
     const exp = new Date(today);
     exp.setDate(today.getDate() + 60);
-
-    /**
-     * A JWT means JSON Web Token, so basically it's a json that is _hashed_ into a string
-     * The cool thing is that you can add custom properties a.k.a metadata
-     * Here we are adding the userId, role and name
-     * Beware that the metadata is public and can be decoded without _the secret_
-     * but the client cannot craft a JWT to fake a userId
-     * because it doesn't have _the secret_ to sign it
-     * more information here: https://softwareontheroad.com/you-dont-need-passport
-     */
     this.logger.silly(`Sign JWT for userId: ${user._id}`);
     return jwt.sign(
       {

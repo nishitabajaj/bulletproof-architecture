@@ -1,22 +1,22 @@
-import {expressjwt} from 'express-jwt';
+import jwt from 'jsonwebtoken';
 import config from '@/config';
+import { Request, Response, NextFunction } from 'express';
 
-const getTokenFromHeader = req => {
-  if (
-    (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Token') ||
-    (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer')
-  ) {
-    return req.headers.authorization.split(' ')[1];
+export const isAuth = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Unauthorized: No Token Provided" });
   }
-  return null;
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    (req as any).user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized: Invalid Token" });
+  }
 };
-
-const isAuth = expressjwt({
-  secret: config.jwtSecret, // The _secret_ to sign the JWTs
-  algorithms: [config.jwtAlgorithm as "HS256"], // JWT Algorithm
-  //userProperty: 'token', // Use req.token to store the JWT
-  getToken: getTokenFromHeader, // How to extract the JWT from the request
-
-});
-
-export default isAuth;
+ export default isAuth;

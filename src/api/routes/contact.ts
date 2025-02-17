@@ -8,16 +8,31 @@ export default (app: Router) => {
   app.use('/contact', route);
   const contactService = Container.get(ContactService);
 
-  route.get('/', middlewares.isAuth, middlewares.attachCurrentUser, (req: Request, res: Response) => {
-    return res.json({ user: req.currentUser }).status(200);
-  });
+  route.get('/', 
+            middlewares.isAuth, 
+            middlewares.attachCurrentUser, 
+            async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const dto = contactService.contactGetDto(req);
+        const contacts = contactService.getContact(dto); // Fetch all contacts
+        return res.status(200).json({ success: true, data: contacts });
+    } catch (error) {
+        console.error('❌ Error fetching contacts:', error.message);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
 
   route.post('/', async (req: any, res: Response, next: NextFunction) => {
-    
-    const dto = contactService.contactCreateDto(req)
-    const data = contactService.contactCreate(dto)
-    return res.json({ data }).status(201)
-  })
+    try {
+        const dto = contactService.contactCreateDto(req);
+        const data = await contactService.contactCreate(dto); // Await MongoDB Save
+        return res.status(201).json({ success: true, data });
+    } catch (error) {
+        console.error('❌ Error:', error.message);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 
   route.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -33,5 +48,16 @@ export default (app: Router) => {
       next(error);
     }
   });
-     
-  };
+
+  route.delete('/', async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const dto = contactService.DeleteContactDTO(req); // Get email from body
+        await contactService.deleteContact(dto.email); // Pass email
+        res.status(200).json({ message: "Contact deleted" });
+    } catch (error) {
+        next(error);
+    }
+});
+};
+
+//http://localhost:3000/api/contact

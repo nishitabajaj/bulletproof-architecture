@@ -10,6 +10,12 @@ const User = new mongoose.Schema(
       index: true,
     },
 
+    phone: {
+      type: Number,
+      required: [true, 'Please enter phone number'],
+      index: true,
+    },
+
     email: {
       type: String,
       lowercase: true,
@@ -26,7 +32,7 @@ const User = new mongoose.Schema(
       default: 'user',
     },
   },
-  { timestamps: true },
+  { timestamps: false },
 );
 
 export default mongoose.model<IUser & mongoose.Document>('User', User);
