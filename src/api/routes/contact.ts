@@ -8,23 +8,35 @@ export default (app: Router) => {
   app.use('/contact', route);
   const contactService = Container.get(ContactService);
 
-  route.get('/', 
-            middlewares.isAuth, 
-            middlewares.attachCurrentUser, 
-            async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const dto = contactService.contactGetDto(req);
-        const contacts = contactService.getContact(dto); // Fetch all contacts
-        return res.status(200).json({ success: true, data: contacts });
-    } catch (error) {
-        console.error('❌ Error fetching contacts:', error.message);
-        return res.status(500).json({ success: false, message: error.message });
-    }
+route.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+      const contacts = await contactService.getContact(); // Fetch all contacts
+      return res.status(200).json({ success: true, data: contacts });
+  } catch (error) {
+      console.error('❌ Error fetching contacts:', error.message);
+      return res.status(500).json({ success: false, message: error.message });
+  }
 });
 
-  route.post('/', async (req: any, res: Response, next: NextFunction) => {
-    try {
-        const dto = contactService.contactCreateDto(req);
+route.get('/:email', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+      const email = req.params.email.trim().toLowerCase(); // Normalize email
+      console.log("🔍 Searching for:", email); // Debugging
+      const contact = await contactService.getContactByEmail(email);
+      console.log("📄 Fetched Contact:", contact); // Debugging
+      if (!contact) {
+          return res.status(404).json({ success: false, message: 'Contact not found' });
+      }
+      return res.status(200).json({ success: true, data: contact });
+  } catch (error) {
+      console.error('❌ Error fetching contact:', error.message);
+      return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+route.post('/', async (req: any, res: Response, next: NextFunction) => {
+  try {
+       const dto = contactService.contactCreateDto(req);
         const data = await contactService.contactCreate(dto); // Await MongoDB Save
         return res.status(201).json({ success: true, data });
     } catch (error) {
@@ -33,21 +45,19 @@ export default (app: Router) => {
     }
 });
 
-
-  route.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      
-      const contactId = req.params.id;
-      const updateDto = contactService.contactUpdateDto(req);
-      const updatedContact = await contactService.contactUpdate(contactId, updateDto);
-      if (!updatedContact) {
-        return res.status(404).json({ message: 'Contact not found' });
-      }
-      return res.status(200).json({ updatedContact });
-    } catch (error) {
-      next(error);
+route.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const contactId = req.params.id;
+    const updateDto = contactService.contactUpdateDto(req);
+    const updatedContact = await contactService.contactUpdate(contactId, updateDto);
+    if (!updatedContact) {
+      return res.status(404).json({ message: 'Contact not found' });
     }
-  });
+    return res.status(200).json({ updatedContact });
+  } catch (error) {
+    next(error);
+  }
+});
 
   route.delete('/', async (req: any, res: Response, next: NextFunction) => {
     try {
@@ -61,3 +71,8 @@ export default (app: Router) => {
 };
 
 //http://localhost:3000/api/contact
+//get: http://localhost:3000/api/contact
+//get by mail: http://localhost:3000/api/contact/suresh@gmail.com
+//post: http://localhost:3000/api/contact
+//put: http://localhost:3000/api/contact/67b2fe32733f4d3eba6977da
+//delete: http://localhost:3000/api/contact

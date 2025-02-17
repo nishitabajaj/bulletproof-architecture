@@ -9,24 +9,26 @@ export default (app: Router) => {
   app.use('/contactsql', route);
   const contactSql = Container.get(ContactMySQL);
 
-  route.get('/:id',  async (req: Request, res: Response) =>{
-    const dto = contactSql.GetContactDTO(req);
-    const data = contactSql.getContact(dto);
-    return res.status(200).json({ data });
+  route.get('/', async (req: Request, res: Response) => {
+    try {
+      const data = await contactSql.getContact(); // Fetch all records
+      return res.status(200).json({ data });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to fetch data' });
+    }
   });
 
-  // route.get('/:email', async (req: Request, res: Response, next: NextFunction) => {
-  //   const dto = contactSql.GetContactByMailDTO(req);
-  //   const data = contactSql.getContactByMail(dto.email);
-  //   if (!data) {return res.status(404).json({ message: 'Contact not found' });}
-  //   return res.status(201).json({ data });
-  // });
-
-  route.post('/', (req: any, res: Response, next: NextFunction) => {
+  route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+    const dto = contactSql.GetContactByIdDTO(req);
+    const data = await contactSql.getContactById(dto);
+    if (!data) {return res.status(404).json({ message: 'Contact not found' });}
+    return res.status(201).json({ data });
+  });  
+  
+  route.post('/', async (req: any, res: Response, next: NextFunction) => {
     const dto = contactSql.createContactDTO(req);
-    const data = contactSql.createContact(dto);
-    if (!data) {
-      return res.status(400).json({ success: false, message: "Contact creation failed" });
+    const data = await contactSql.createContact(dto);
+    if (!data) {return res.status(400).json({ success: false, message: "Contact creation failed" });
     }
     return res.status(201).json({ success: true, data });
   });
@@ -51,13 +53,8 @@ export default (app: Router) => {
 route.delete('/:email', async (req: Request, res: Response, next: NextFunction) => {
   try {
       console.log("📩 Email from URL:", req.params.email);
-
       const isDeleted = await contactSql.deleteContact(req.params.email);
-
-      if (!isDeleted) {
-          return res.status(404).json({ success: false, message: "Contact not found" });
-      }
-
+      if (!isDeleted) { return res.status(404).json({ success: false, message: "Contact not found" });}
       return res.status(200).json({ success: true, message: "Contact deleted successfully" }); // Fix: Use 200 for JSON response
   } catch (error: any) {
       console.error("❌ Error deleting contact:", error.message);
@@ -67,3 +64,9 @@ route.delete('/:email', async (req: Request, res: Response, next: NextFunction) 
 };
 
 // http://localhost:3000/api/contact_sql
+
+// get: http://localhost:3000/api/contactsql/
+// get by id: http://localhost:3000/api/contactsql/1
+// post: http://localhost:3000/api/contactsql
+//put: http://localhost:3000/api/contactsql/heena@gmai.com
+// delete: http://localhost:3000/api/contactsql/heena@gmai.com

@@ -8,6 +8,12 @@ export class ContactDto {
   name: string;
   phone: number;
   email: string;
+
+  constructor(contact: IContact) {
+    this.name = contact.name;
+    this.phone = contact.phone;
+    this.email = contact.email;
+}
 }
 
 export class CreateContactDto{

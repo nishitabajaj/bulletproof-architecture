@@ -14,23 +14,23 @@ import user from '@/models/user';
 export default class ContactService {
   constructor(
     @Inject('logger') private logger,
-  ) {
-    
+  ) { 
   }
 
-  public contactGetDto(req: any): IContact{
-      return {
-        name: req.body.name,
-        phone: req.body.phone,
-        email: req.body.email, };
-    }
-  
-  public async getContact(dto: ContactDto): Promise<ContactDto[]>{
-    const contacts = await user.find(); // Fetch contacts from MongoDB
-    return contacts.map(contact => this.contactGetDto(contact)); // Map to DTO
-  }  
+public async getContact(): Promise<ContactDto[]> {
+    const contacts = await user.find();
+    return contacts.map(contact => new ContactDto(contact));
+}
 
-  public contactCreateDto(req: any): IContact {
+public async getContactByEmail(email: string): Promise<ContactDto | null> {
+  console.log("🛠️ Searching for email:", email); // Debugging
+  const contact = await user.findOne({ email: { $regex: new RegExp(`^${email}$`, "i") } });
+  console.log("📄 Query Result:", contact); // Debugging
+  if (!contact) return null;
+  return new ContactDto(contact); // Map to DTO
+}
+
+public contactCreateDto(req: any): IContact {
     if(!req.body.name){throw new Error('Name is required Field!!')}
     if(!req.body.phone){throw new Error('Phone is required Field!!')}
     if(!req.body.email){throw new Error('Email is required Field!!')}

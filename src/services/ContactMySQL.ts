@@ -41,12 +41,7 @@ export default class ContactMySQL {
 
   // ✅ Update Contact DTO
   public updateContactDTO(req: any): UpdateContactDto {
-    // const dto = new UpdateContactDto()
     if (!req.body.email) { throw new Error("Mail is required"); }
-
-    // if(req.body.name){dto.name= req.body.name; }
-    // if(req.body.phone){dto.phone= req.body.phone; }
-
     return {
       name: req.body.name,
       phone: req.body.phone,
@@ -58,27 +53,20 @@ export default class ContactMySQL {
   public async updateContact(oldEmail: string, updateData: UpdateContactDto): Promise<IContact | null> {
     try {
       console.log('🔍 Searching for contact with email:', oldEmail);
-
       const contact = await Contact.findOne({ where: { email: oldEmail } });
-
       if (!contact) {
         console.log('❌ Contact not found:', oldEmail);
         return null;
       }
-
       console.log('✅ Contact found:', contact.toJSON());
       console.log('🔄 Updating contact with data:', updateData);
-
       // ✅ Update fields (including email)
       if (updateData.email) contact.email = updateData.email;
       if (updateData.name) contact.name = updateData.name;
       if (updateData.phone) contact.phone = updateData.phone;
-
       // ✅ Save the updated contact
       await contact.save();
-
       console.log('🟢 Contact updated successfully:', contact.toJSON());
-
       return contact;
     } catch (error: any) {
       console.error('❌ Error updating contact:', error.message);
@@ -86,38 +74,17 @@ export default class ContactMySQL {
     }
   }
 
-  // ✅ Get Contact DTO
-  public GetContactDTO(req: any): GetById {
-    return {
-      id: +req.params.id
-    };
-  }
-
-
   // ✅ Get Contact
-  public getContact(dto: GetById): Promise<IContact[] | null> {
-    // const whereCondition: any = {};
-
-    // if (dto.name) whereCondition.name = dto.name;
-    // if (dto.phone) whereCondition.phone = dto.phone;
-    // if (dto.email) whereCondition.email = dto.email;
-    // return Contact.findOne({ where: { id: dto.id }});
+  public getContact(): Promise<IContact[] | null> {
     return Contact.findAll();
   }
 
-  public GetContactByMailDTO(req: any): GetContactByMailDto {
-    if (!req.body.email) {
-      throw new Error("Mail is required");
-    }
-    return {
-      name: req.body.name,
-      phone: req.body.phone,
-      email: req.body.email,
-    }
+  public GetContactByIdDTO(req: any): GetById {
+    return {id: +req.params.id }
   }
 
-  public getContactByMail(email: string) {
-    return Contact.findOne({ where: { email } });
+  public getContactById(dto: GetById): Promise<IContact | null> {
+    return Contact.findOne({ where: { id: dto.id } });
   }
 
   public DeleteContactDTO(req: any): DeleteContactDto {
@@ -144,6 +111,4 @@ export default class ContactMySQL {
       return false;
     }
   }
-
-
 }
