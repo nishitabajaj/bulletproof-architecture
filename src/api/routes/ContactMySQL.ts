@@ -2,6 +2,8 @@ import { Router, Request, Response, NextFunction } from 'express';
 import middlewares from '../middlewares';
 import { Container } from 'typedi';
 import ContactMySQL  from '@/services/ContactMySQL';
+import attachCurrentUser from '../middlewares/attachCurrentUser';
+import isAuth from '../middlewares/isAuth';
 
 const route = Router();
 
@@ -9,7 +11,7 @@ export default (app: Router) => {
   app.use('/contactsql', route);
   const contactSql = Container.get(ContactMySQL);
 
-  route.get('/', async (req: Request, res: Response) => {
+  route.get('/', isAuth, attachCurrentUser, async (req: Request, res: Response) => {
     try {
       const data = await contactSql.getContact(); // Fetch all records
       return res.status(200).json({ data });
@@ -18,7 +20,7 @@ export default (app: Router) => {
     }
   });
 
-  route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  route.get('/:id', isAuth, attachCurrentUser,async (req: Request, res: Response, next: NextFunction) => {
     const dto = contactSql.GetContactByIdDTO(req);
     const data = await contactSql.getContactById(dto);
     if (!data) {return res.status(404).json({ message: 'Contact not found' });}

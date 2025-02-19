@@ -2,13 +2,15 @@ import { Router, Request, Response, NextFunction } from 'express';
 import middlewares from '../middlewares';
 import { Container } from 'typedi';
 import ContactService from '@/services/contact';
+import attachCurrentUser from '../middlewares/attachCurrentUser';
+import isAuth from '../middlewares/isAuth';
 const route = Router();
 
 export default (app: Router) => {
   app.use('/contact', route);
   const contactService = Container.get(ContactService);
 
-route.get('/', async (req: Request, res: Response, next: NextFunction) => {
+route.get('/', isAuth, attachCurrentUser, async (req: Request, res: Response, next: NextFunction) => {
   try {
       const contacts = await contactService.getContact(); // Fetch all contacts
       return res.status(200).json({ success: true, data: contacts });
@@ -18,7 +20,7 @@ route.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-route.get('/:email', async (req: Request, res: Response, next: NextFunction) => {
+route.get('/:email', isAuth, attachCurrentUser,async (req: Request, res: Response, next: NextFunction) => {
   try {
       const email = req.params.email.trim().toLowerCase(); // Normalize email
       console.log("🔍 Searching for:", email); // Debugging
