@@ -13,8 +13,7 @@ export default (app: Router) => {
   // Route to get all users with their tokens
   route.get('/all', async (req: Request, res: Response) => {
     try {
-      const users = await UserModel.find(); // Fetch all users from MongoDB
-
+      const users = await UserModel.find(); 
       const usersWithTokens = users.map((user: IUser & mongoose.Document) => {
         // Generate a JWT token for each user
         const token = jwt.sign({ _id: user._id }, config.jwtSecret, { expiresIn: '1h' });
@@ -25,9 +24,9 @@ export default (app: Router) => {
             name: user.name,
             phone: user.phone,
             email: user.email,
-            role: user.role, // Now recognized by TypeScript
+            role: user.role, 
           },
-          token, // Add the generated token for each user
+          token, 
         };
       });
 
@@ -37,17 +36,6 @@ export default (app: Router) => {
     }
   });
 
-  // Route to get current user info
-  route.get('/me', async (req: Request, res: Response) => {
-    try {
-      const userRecord = req.currentUser as IUser; // Typecast to IUser
-      if (!userRecord) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      return res.json({ user: userRecord }).status(200);
-    } catch (error) {
-      return res.status(500).json({ message: 'Server error', error: error.message });
-    }
-  });
 };
+
+//http://localhost:3000/api/users/all

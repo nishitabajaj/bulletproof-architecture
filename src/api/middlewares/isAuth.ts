@@ -18,8 +18,7 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as CustomJwtPayload;
-    console.log(decoded);
-
+    console.log("Data retrieved");
     if (!decoded || !decoded._id) {
       return res.status(401).json({ message: "Unauthorized: Invalid Token" });
     }

@@ -103,7 +103,7 @@ export default class ContactMySQL {
         return false;
       }
       console.log("🗑️ Deleting contact:", email);
-      await contact.destroy();  // Fix: Call `destroy()` on the instance
+      await contact.destroy(); 
       console.log("✅ Contact deleted successfully");
       return true;
     } catch (error: any) {

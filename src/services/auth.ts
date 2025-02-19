@@ -54,9 +54,6 @@ export default class AuthService {
     if (!userRecord) {
       throw new Error('User not registered');
     }
-    /**
-     * We use verify from argon2 to prevent 'timing based' attacks
-     */
     this.logger.silly('Checking password');
     const validPassword = await argon2.verify(userRecord.password, password);
     if (validPassword) {
@@ -67,9 +64,6 @@ export default class AuthService {
       const user = userRecord.toObject();
       Reflect.deleteProperty(user, 'password');
       Reflect.deleteProperty(user, 'salt');
-      /**
-       * Easy as pie, you don't need passport.js anymore :)
-       */
       return { user, token };
     } else {
       throw new Error('Invalid Password');

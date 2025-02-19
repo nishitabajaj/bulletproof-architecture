@@ -62,3 +62,4 @@ export default (app: Router) => {
 };
 
 //http://localhost:3000/api/auth/signin
+// http://localhost:3000/api/auth/signup : specify name, email, password, phone

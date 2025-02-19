@@ -65,10 +65,10 @@ route.delete('/:email', async (req: Request, res: Response, next: NextFunction) 
 });
 };
 
-// http://localhost:3000/api/contact_sql
+// http://localhost:3000/api/contactsql
 
 // get: http://localhost:3000/api/contactsql/
 // get by id: http://localhost:3000/api/contactsql/1
 // post: http://localhost:3000/api/contactsql
-//put: http://localhost:3000/api/contactsql/heena@gmai.com
-// delete: http://localhost:3000/api/contactsql/heena@gmai.com
+//put: http://localhost:3000/api/contactsql/heena@gmai.com (old mail if you want to update mail)
+// delete: http://localhost:3000/api/contactsql/heena@gmail.com

@@ -27,7 +27,6 @@ const attachCurrentUser = async (req: Request, res: Response, next: NextFunction
     // Fetch user from MongoDB
     const UserModel = Container.get('userModel') as mongoose.Model<IUser & mongoose.Document>;
     const userRecord = await UserModel.findById(decoded._id);
-
     if (!userRecord) {
       return res.status(401).json({ message: 'User not found' });
     }
